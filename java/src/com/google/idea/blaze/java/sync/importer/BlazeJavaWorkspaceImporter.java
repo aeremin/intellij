@@ -114,7 +114,7 @@ public final class BlazeJavaWorkspaceImporter {
   public BlazeJavaImportResult importWorkspace(BlazeContext context) {
     WorkspaceBuilder workspaceBuilder = new WorkspaceBuilder();
     for (TargetIdeInfo target : sourceFilter.sourceTargets) {
-      addTargetAsSource(
+      addTargetAsSource(context,
           workspaceBuilder, target, sourceFilter.targetToJavaSources.get(target.getKey()));
     }
 
@@ -250,18 +250,27 @@ public final class BlazeJavaWorkspaceImporter {
   }
 
   private void addTargetAsSource(
+      BlazeContext context,
       WorkspaceBuilder workspaceBuilder,
       TargetIdeInfo target,
       Collection<ArtifactLocation> javaSources) {
+    context.output(PrintOutput.log("addTargetAsSource: " + target.toString()));
+
     JavaIdeInfo javaIdeInfo = target.getJavaIdeInfo();
     if (javaIdeInfo == null) {
+      context.output(PrintOutput.log("javaIdeInfo == null"));
       return;
     }
 
     TargetKey targetKey = target.getKey();
     Collection<String> jars = jdepsMap.getDependenciesForTarget(targetKey);
     if (jars != null) {
+      for (String s : jars) {
+        context.output(PrintOutput.log("jdep += " + s));
+      }
       workspaceBuilder.jdeps.addAll(jars);
+    } else {
+      context.output(PrintOutput.log("jars == null"));
     }
 
     // Add all deps if this target is in the current working set

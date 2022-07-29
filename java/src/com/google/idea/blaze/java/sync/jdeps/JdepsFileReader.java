@@ -116,8 +116,10 @@ public class JdepsFileReader {
       throws InterruptedException, ExecutionException {
     Map<OutputArtifact, TargetKey> fileToTargetMap = Maps.newHashMap();
     for (TargetIdeInfo target : targetsToLoad) {
-      BlazeArtifact output = resolveJdepsOutput(decoder, target);
+      context.output(PrintOutput.log("doLoadJdepsFiles: " + target.toProto().toString()));
+      BlazeArtifact output = resolveJdepsOutput(context, decoder, target);
       if (output instanceof OutputArtifact) {
+        context.output(PrintOutput.log("OutputArtifact!!!"));
         fileToTargetMap.put((OutputArtifact) output, target.getKey());
       }
     }
@@ -228,11 +230,12 @@ public class JdepsFileReader {
 
   @Nullable
   private static BlazeArtifact resolveJdepsOutput(
-      ArtifactLocationDecoder decoder, TargetIdeInfo target) {
+      BlazeContext context, ArtifactLocationDecoder decoder, TargetIdeInfo target) {
     JavaIdeInfo javaIdeInfo = target.getJavaIdeInfo();
     if (javaIdeInfo == null || javaIdeInfo.getJdepsFile() == null) {
       return null;
     }
+    context.output(PrintOutput.log(" decoder.resolveOutput: " + javaIdeInfo.getJdepsFile().toString()));
     return decoder.resolveOutput(javaIdeInfo.getJdepsFile());
   }
 }
