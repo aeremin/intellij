@@ -22,6 +22,7 @@ import com.google.idea.blaze.base.BlazeTestCase;
 import com.google.idea.blaze.base.command.info.BlazeInfo;
 import com.google.idea.blaze.base.ideinfo.ArtifactLocation;
 import com.google.idea.blaze.base.model.RemoteOutputArtifacts;
+import java.nio.file.Path;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -69,7 +70,7 @@ public class ArtifactLocationDecoderTest extends BlazeTestCase {
 
     assertThat(artifactLocation.getRelativePath()).isEqualTo("com/google/Bla.java");
     assertThat(artifactLocation.getExecutionRootRelativePath())
-        .isEqualTo("external/repo_name/com/google/Bla.java");
+        .isEqualTo(Path("external/repo_name/com/google/Bla.java"));
 
     ArtifactLocationDecoder decoder =
         new ArtifactLocationDecoderImpl(
@@ -99,7 +100,7 @@ public class ArtifactLocationDecoderTest extends BlazeTestCase {
 
     assertThat(artifactLocation.getRelativePath()).isEqualTo("com/google/Bla.java");
     assertThat(artifactLocation.getExecutionRootRelativePath())
-        .isEqualTo("blaze-out/crosstool/bin/external/repo_name/com/google/Bla.java");
+        .isEqualTo(Path("blaze-out/crosstool/bin/external/repo_name/com/google/Bla.java"));
 
     ArtifactLocationDecoder decoder =
         new ArtifactLocationDecoderImpl(
@@ -131,7 +132,7 @@ public class ArtifactLocationDecoderTest extends BlazeTestCase {
 
     assertThat(artifactLocation.getRelativePath()).isEqualTo("com/google/Bla.java");
     assertThat(artifactLocation.getExecutionRootRelativePath())
-        .isEqualTo("../repo_name/com/google/Bla.java");
+        .isEqualTo(Path("../repo_name/com/google/Bla.java"));
 
     ArtifactLocationDecoder decoder =
         new ArtifactLocationDecoderImpl(
@@ -161,7 +162,7 @@ public class ArtifactLocationDecoderTest extends BlazeTestCase {
 
     assertThat(artifactLocation.getRelativePath()).isEqualTo("com/google/Bla.java");
     assertThat(artifactLocation.getExecutionRootRelativePath())
-        .isEqualTo("../repo_name/blaze-out/crosstool/bin/com/google/Bla.java");
+        .isEqualTo(Path("../repo_name/blaze-out/crosstool/bin/com/google/Bla.java"));
 
     ArtifactLocationDecoder decoder =
         new ArtifactLocationDecoderImpl(

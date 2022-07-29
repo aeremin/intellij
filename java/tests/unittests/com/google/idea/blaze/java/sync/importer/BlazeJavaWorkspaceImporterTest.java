@@ -1646,8 +1646,8 @@ public class BlazeJavaWorkspaceImporterTest extends BlazeTestCase {
   /* Utility methods */
 
   private static String libraryFileName(BlazeJarLibrary library) {
-    return new File(library.libraryArtifact.jarForIntellijLibrary().getExecutionRootRelativePath())
-        .getName();
+    return new library.libraryArtifact.jarForIntellijLibrary().getExecutionRootRelativePath()
+        .toFile().getName();
   }
 
   @Nullable

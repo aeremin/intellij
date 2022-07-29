@@ -65,10 +65,8 @@ public final class ArtifactLocationDecoderImpl implements ArtifactLocationDecode
     if (artifactLocation.isMainWorkspaceSourceArtifact()) {
       return pathResolver.resolveToFile(artifactLocation.getRelativePath());
     }
-    String path =
-        Paths.get(
-                blazeInfo.getExecutionRoot().getPath(),
-                artifactLocation.getExecutionRootRelativePath())
+    String path = Paths.get(blazeInfo.getExecutionRoot().getPath())
+            .resolve(artifactLocation.getExecutionRootRelativePath())
             .toString();
     // doesn't require file-system operations -- no attempt to resolve symlinks.
     return new File(FileUtil.toCanonicalPath(path));
@@ -101,7 +99,7 @@ public final class ArtifactLocationDecoderImpl implements ArtifactLocationDecode
    */
   private BlazeArtifact outputArtifactFromExecRoot(ArtifactLocation location) {
     // exec-root-relative path of the form 'blaze-out/mnemonic/genfiles/path'
-    String execRootPath = location.getExecutionRootRelativePath();
+    String execRootPath = location.getExecutionRootRelativePath().toString();
     int ix1 = execRootPath.indexOf('/');
     int ix2 = execRootPath.indexOf('/', ix1 + 1);
     if (ix2 == -1) {

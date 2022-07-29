@@ -21,6 +21,7 @@ import com.google.common.collect.ComparisonChain;
 import com.google.devtools.intellij.aspect.Common;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.intellij.openapi.util.text.StringUtil;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 
@@ -112,8 +113,8 @@ public final class ArtifactLocation
   }
 
   /** For main-workspace source artifacts, this is simply the workspace-relative path. */
-  public String getExecutionRootRelativePath() {
-    return Paths.get(getRootExecutionPathFragment(), getRelativePath()).toString();
+  public Path getExecutionRootRelativePath() {
+    return Paths.get(getRootExecutionPathFragment(), getRelativePath());
   }
 
   public static Builder builder() {
@@ -187,7 +188,7 @@ public final class ArtifactLocation
 
   @Override
   public String toString() {
-    return getExecutionRootRelativePath();
+    return getExecutionRootRelativePath().toString();
   }
 
   @Override
