@@ -34,6 +34,7 @@ import com.google.idea.blaze.base.scope.BlazeContext;
 import com.google.idea.blaze.base.scope.Scope;
 import com.google.idea.blaze.base.scope.output.IssueOutput;
 import com.google.idea.blaze.base.scope.output.PerformanceWarning;
+import com.google.idea.blaze.base.scope.output.PrintOutput;
 import com.google.idea.blaze.base.scope.scopes.TimingScope;
 import com.google.idea.blaze.base.scope.scopes.TimingScope.EventType;
 import com.google.idea.blaze.base.settings.Blaze;
@@ -166,6 +167,7 @@ public class BlazeJavaSyncPlugin implements BlazeSyncPlugin {
                 .addAll(projectViewSet.listItems(ExcludeLibrarySection.KEY))
                 .addAll(projectViewSet.listItems(ExcludedLibrarySection.KEY))
                 .build());
+    context.output(PrintOutput.log(String.format("Sync State: %s", importResult.toProto().toString())));
     syncStateBuilder.put(new BlazeJavaSyncData(importResult, excludedLibraries));
   }
 

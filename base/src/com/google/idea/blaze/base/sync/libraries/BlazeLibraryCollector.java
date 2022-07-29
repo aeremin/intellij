@@ -20,6 +20,8 @@ import com.google.common.collect.Sets;
 import com.google.idea.blaze.base.model.BlazeLibrary;
 import com.google.idea.blaze.base.model.BlazeProjectData;
 import com.google.idea.blaze.base.projectview.ProjectViewSet;
+import com.google.idea.blaze.base.scope.BlazeContext;
+import com.google.idea.blaze.base.scope.output.PrintOutput;
 import com.google.idea.blaze.base.sync.BlazeSyncPlugin;
 import java.util.List;
 import java.util.Objects;
@@ -33,6 +35,42 @@ public class BlazeLibraryCollector {
   public static List<BlazeLibrary> getLibraries(
       ProjectViewSet projectViewSet, BlazeProjectData blazeProjectData) {
     return collectLibraries(projectViewSet, blazeProjectData, LibrarySource::getLibraries);
+  }
+
+  public static List<BlazeLibrary> getLibrariesLogged(
+      BlazeContext context, ProjectViewSet projectViewSet, BlazeProjectData blazeProjectData) {
+    return collectLibrariesLogged(context, projectViewSet, blazeProjectData, LibrarySource::getLibraries);
+  }
+
+  /* Collect all libraries of specific types from all library sources. */
+  private static List<BlazeLibrary> collectLibrariesLogged(
+      BlazeContext context,
+      ProjectViewSet projectViewSet,
+      BlazeProjectData blazeProjectData,
+      Function<LibrarySource, List<? extends BlazeLibrary>> librarySelector) {
+    // Use set to filter out duplicates.
+    Set<BlazeLibrary> result = Sets.newLinkedHashSet();
+    List<LibrarySource> librarySources = Lists.newArrayList();
+    for (BlazeSyncPlugin syncPlugin : BlazeSyncPlugin.EP_NAME.getExtensions()) {
+      LibrarySource librarySource = syncPlugin.getLibrarySource(projectViewSet, blazeProjectData);
+      if (librarySource != null) {
+        librarySources.add(librarySource);
+      }
+    }
+    for (LibrarySource librarySource : librarySources) {
+      result.addAll(librarySelector.apply(librarySource));
+    }
+    Predicate<BlazeLibrary> libraryFilter =
+        librarySources.stream()
+            .map(LibrarySource::getLibraryFilter)
+            .filter(Objects::nonNull)
+            .reduce(Predicate::and)
+            .orElse(o -> true);
+    for (BlazeLibrary lib : result) {
+      context.output(PrintOutput.log(String.format("Collected library %s", lib.toString())));
+    }
+    return BlazeLibrarySorter.sortLibraries(
+        result.stream().filter(libraryFilter).collect(Collectors.toList()));
   }
 
   /* Collect all libraries of specific types from all library sources. */

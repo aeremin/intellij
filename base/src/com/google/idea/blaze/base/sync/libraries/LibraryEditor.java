@@ -66,8 +66,8 @@ public class LibraryEditor {
 
     try {
       for (BlazeLibrary library : libraries) {
-        updateLibrary(
-            project, blazeProjectData.getArtifactLocationDecoder(), modelsProvider, library);
+        updateLibraryLogged(
+            context, project, blazeProjectData.getArtifactLocationDecoder(), modelsProvider, library);
       }
 
       // Garbage collect unused libraries
@@ -93,14 +93,66 @@ public class LibraryEditor {
           Library library = modelsProvider.getLibraryByName(libraryIntellijName);
           if (!gcRetentionFilter.test(library)) {
             if (library != null) {
+              context.output(PrintOutput.log(String.format("Removing the library %s", libraryIntellijName)));
               modelsProvider.removeLibrary(library);
+            } else {
+              context.output(
+                PrintOutput.log(String.format("Keeping the library %s as it's null o_O", libraryIntellijName)));
             }
+          } else {
+              context.output(
+                PrintOutput.log(String.format("Keeping the library %s as it's passed GC filter", libraryIntellijName)));
+
           }
+        } else {
+              context.output(
+                PrintOutput.log(String.format("Keeping the library %s as it still used", libraryIntellijName)));
+
         }
       }
     } finally {
       modelsProvider.commit();
     }
+  }
+
+  /**
+   * Updates the library in IntelliJ's project model.
+   *
+   * <p>Note: Callers of this method must invoke {@link IdeModifiableModelsProvider#commit()} on the
+   * passed {@link IdeModifiableModelsProvider} for any changes to take effect. Be aware that {@code
+   * commit()} should only be called once after all modifications as frequent calls can be slow.
+   *
+   * @param project the IntelliJ project
+   * @param artifactLocationDecoder a decoder to determine the location of artifacts
+   * @param modelsProvider a modifier for IntelliJ's project model which supports quick application
+   *     of massive modifications to the project model
+   * @param blazeLibrary the library which should be updated in the project context
+   */
+  public static void updateLibraryLogged(
+      BlazeContext context,
+      Project project,
+      ArtifactLocationDecoder artifactLocationDecoder,
+      IdeModifiableModelsProvider modelsProvider,
+      BlazeLibrary blazeLibrary) {
+    String libraryName = blazeLibrary.key.getIntelliJLibraryName();
+
+    Library library = modelsProvider.getLibraryByName(libraryName);
+    boolean libraryExists = library != null;
+    if (!libraryExists) {
+      context.output(PrintOutput.log(String.format("Adding the library %s", libraryName)));
+      library = modelsProvider.createLibrary(libraryName);
+    }
+    Library.ModifiableModel libraryModel = modelsProvider.getModifiableLibraryModel(library);
+    if (libraryExists) {
+      context.output(PrintOutput.log(String.format("Existing library %s", libraryName)));
+      for (String url : libraryModel.getUrls(OrderRootType.CLASSES)) {
+        libraryModel.removeRoot(url, OrderRootType.CLASSES);
+      }
+      for (String url : libraryModel.getUrls(OrderRootType.SOURCES)) {
+        libraryModel.removeRoot(url, OrderRootType.SOURCES);
+      }
+    }
+    blazeLibrary.modifyLibraryModel(project, artifactLocationDecoder, libraryModel);
   }
 
   /**
@@ -126,10 +178,12 @@ public class LibraryEditor {
     Library library = modelsProvider.getLibraryByName(libraryName);
     boolean libraryExists = library != null;
     if (!libraryExists) {
+      logger.error("Adding the library %s", libraryName);
       library = modelsProvider.createLibrary(libraryName);
     }
     Library.ModifiableModel libraryModel = modelsProvider.getModifiableLibraryModel(library);
     if (libraryExists) {
+      logger.error("Existing library %s", libraryName);
       for (String url : libraryModel.getUrls(OrderRootType.CLASSES)) {
         libraryModel.removeRoot(url, OrderRootType.CLASSES);
       }

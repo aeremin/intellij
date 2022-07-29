@@ -213,18 +213,21 @@ public final class BlazeJavaWorkspaceImporter {
             new BlazeJarLibrary(
                 new LibraryArtifact(artifact, null, srcJars), /* targetKey= */ null);
       }
+      context.output(PrintOutput.log("Collect jars from jdep references: " + library.key.toString()));
       result.put(library.key, library);
     }
 
     // Collect jars referenced by direct deps from your working set
     for (TargetKey deps : workspaceBuilder.directDeps) {
       for (BlazeJarLibrary library : targetKeyToLibrary.get(deps)) {
+        context.output(PrintOutput.log("Collect jars referenced by direct deps from your working set: " + library.key.toString()));
         result.put(library.key, library);
       }
     }
 
     // Collect generated jars from source rules
     for (BlazeJarLibrary library : workspaceBuilder.generatedJarsFromSourceTargets) {
+      context.output(PrintOutput.log("Collect generated jars from source rules: " + library.key.toString()));
       result.put(library.key, library);
     }
 
